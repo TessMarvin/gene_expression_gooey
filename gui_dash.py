@@ -46,7 +46,8 @@ def gene_fun(gene, csv_files):
 def main():
     parser = GooeyParser(description="Dashboard for Gene Expression Analysis of Plasmodium falciparum")
     parser.add_argument('genename', help='name of the gene to process')
-    parser.add_argument('-scat', help='Enable Scatter Plot', action='store_true', widget='BlockCheckbox')
+    data_processing = parser.add_argument_group("Data Processing Options", "Customize Your Analysis")
+    data_processing.add_argument('-scat', help='Enable Scatter Plot', action='store_true', widget='BlockCheckbox')
     args = parser.parse_args()
     gene = args.genename
     scatter= args.scat

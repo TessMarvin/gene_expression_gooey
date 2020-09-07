@@ -11,6 +11,7 @@ import sys
 import glob
 from argparse import ArgumentParser
 from gooey import Gooey
+from gooey import GooeyParser
 def gene_fun(gene, csv_files):
     #first check to make sure the gene is in every CSV file provided
     #if the gene name has been misspelled, then the user will be notified
@@ -37,16 +38,18 @@ def gene_fun(gene, csv_files):
             name = date.plot(kind='scatter', x='Time', y=gene, color=color_list[num], label = isolate, ax = pl)
             name.set(xlabel = 'Time (hrs)', ylabel= 'Log2 (Fold Change)')
             num += 1
-    plt.savefig("./output.pdf", bbox_inches='tight')
+    plt.show()
 #the first argument is the gene name
 #next, the program searches recurisively thru the current directory for .csv files
 #or the files can be passed in by stdin as part of a pipeline
 @Gooey
 def main():
-    parser = ArgumentParser(description="Dashboard for Gene Expression Analysis of Plasmodium falciparum")
+    parser = GooeyParser(description="Dashboard for Gene Expression Analysis of Plasmodium falciparum")
     parser.add_argument('genename', help='name of the gene to process')
+    parser.add_argument('-scat', help='Enable Scatter Plot', action='store_true', widget='BlockCheckbox')
     args = parser.parse_args()
     gene = args.genename
+    scatter= args.scat
     CSVs = []
     #find file recursively in data directory within container
     for file_name in glob.iglob('./**/*.csv', recursive = True):
@@ -56,7 +59,8 @@ def main():
         print("Please ensure that the CSV files are in the working directory")
         return(None)
     else:
-        gene_fun(gene, CSVs)
+        if(scatter):
+            gene_fun(gene, CSVs)
 
 if __name__ == '__main__':
    main()

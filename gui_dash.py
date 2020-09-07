@@ -1,14 +1,12 @@
 #Author: Tess Marvin (tmarvin@nd.edu)
-#Usage: python gene_building_command_line.py
+#Usage: pythonw gui_dash.py
 #This function can take from 1 to 7 csv files and create one scatter plot of transcription over a time course
 #It would be useful if your file naming convention is malariaisolatelog2anythinghere.csv
 #e.g. NHP4026log2imputedtimecourse.csv
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
-from tkinter import *
 import sys
-import glob
 from argparse import ArgumentParser
 from gooey import Gooey
 from gooey import GooeyParser
@@ -44,24 +42,33 @@ def gene_fun(gene, csv_files):
 #or the files can be passed in by stdin as part of a pipeline
 @Gooey
 def main():
+    #So first we will handle the arguments that are "required" -- the files and the gene of interest
+    #Here we give our GUI a title
     parser = GooeyParser(description="Dashboard for Gene Expression Analysis of Plasmodium falciparum")
-    parser.add_argument('genename', help='name of the gene to process')
+    #Here we allow for the entry of the gene of interest's name
+    parser.add_argument('genename', help='Enter the gene you wish to analyze.')
+    #Here we allow for the selection of the data files to analyze
+    parser.add_argument("file_chooser", nargs='*', help = 'Choose Files to include in analysis.', widget='MultiFileChooser')
+    #Next, we have a section where the user can select how they would like to analyze the data
     data_processing = parser.add_argument_group("Data Processing Options", "Customize Your Analysis")
+    #At the moment, there is only one way to analyze the data: a scatterplot of the gene expression over time
     data_processing.add_argument('-scat', help='Enable Scatter Plot', action='store_true', widget='BlockCheckbox')
+    #Now we parse all these arguments
     args = parser.parse_args()
+    #Save the entry of the gene name
     gene = args.genename
+    #Save whether or not the user would like to produce a scatter plot
     scatter= args.scat
-    CSVs = []
-    #find file recursively in data directory within container
-    for file_name in glob.iglob('./**/*.csv', recursive = True):
-        CSVs.append(file_name)
+    #Save the file pathways that the user has selected
+    csvfiles= args.file_chooser
     #if no CSV files are found, fail gracefully and request the CSV files be in working directory
-    if(len(CSVs) == 0):
-        print("Please ensure that the CSV files are in the working directory")
+    if(len(csvfiles) == 0):
+        print("Please ensure that you select files to analyze")
         return(None)
     else:
+        #If the user would like a scatter plot, produce one
         if(scatter):
-            gene_fun(gene, CSVs)
+            gene_fun(gene, csvfiles)
 
 if __name__ == '__main__':
    main()

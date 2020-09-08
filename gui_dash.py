@@ -40,7 +40,23 @@ def gene_fun(gene, csv_files):
 #the first argument is the gene name
 #next, the program searches recurisively thru the current directory for .csv files
 #or the files can be passed in by stdin as part of a pipeline
-@Gooey
+@Gooey(
+    program_name='Plasmodium falciparum Genomic Analysis',
+    menu=[{
+    'name':'File',
+    'items': [{
+            'type': 'AboutDialog',
+            'menuTitle': 'About',
+            'name': 'Genomic Analysis of Plasmodium falciparum',
+            'description': 'A tool to probe drug resistance in malaria',
+            'version': '1.0',
+            'copyright': '2020',
+            'website': 'https://github.com/TessMarvin',
+            'developer': 'Tess Marvin (tmarvin@nd.edu)',
+            'license': 'University of Notre Dame'
+    }]
+    }]
+)
 def main():
     #So first we will handle the arguments that are "required" -- the files and the gene of interest
     #Here we give our GUI a title

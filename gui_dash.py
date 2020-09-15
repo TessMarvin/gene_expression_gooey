@@ -182,7 +182,77 @@ def parentalboxes(gene, df_correctnames):
             ax.set(title=gene)
         ax.margins(0.05)
     plt.show()
-#the first argument is the gene name
+
+def progenybar(gene, df_correctnames):
+    '''
+    So this function makes a scatter plot depicting the gene expression for a gene of interst across all progeny (each replicate is a point)
+    This is specifically for data at time points 4, 30, and 44
+    '''
+    how_many_reps = {}
+    names4 = {}
+    names30 = {}
+    names44 = {}
+    for name in df_correctnames.loc[gene].index:
+        if name not in how_many_reps.keys():
+            how_many_reps[name] = 1
+        else:
+            how_many_reps[name] += 1
+    for name in df_correctnames.loc[gene].index:
+        name_str = str(name)
+        if 'NF54gfp' in name_str:
+            continue
+        if 'NHP4026' in name_str:
+            continue
+        if '_44' in name_str:
+            if name_str in names44.keys():
+                continue
+            else:
+                if how_many_reps[name] == 1:
+                    m = []
+                    m.append(df_correctnames.loc[gene, name_str])
+                    names44[name] = m
+                else:
+                    m = list(df_correctnames.loc[gene, name_str])
+                    names44[name] = m
+        if '_30' in name:
+            if name_str in names30.keys():
+                continue
+            else:
+                if how_many_reps[name] == 1:
+                    m = []
+                    m.append(df_correctnames.loc[gene, name_str])
+                    names30[name] = m
+                else:
+                    m = list(df_correctnames.loc[gene, name_str])
+                    names30[name] = m
+        if '_4' in name:
+            if '_44' in name:
+                continue
+            if name_str in names4.keys():
+                continue
+            else:
+                if how_many_reps[name] == 1:
+                    m = []
+                    m.append(df_correctnames.loc[gene, name_str])
+                    names4[name] = m
+                else:
+                    m = list(df_correctnames.loc[gene, name_str])
+                    names4[name] = m
+    data = {}
+    data['4 hpi'] = names4
+    data['30 hpi'] = names30
+    data['44 hpi'] = names44
+    fig, axs = plt.subplots(3,1)
+    fig.subplots_adjust(hspace=0.5)
+    fig.suptitle(gene)
+    for ax, name in zip(axs, ['4 hpi', '30 hpi', '44 hpi']):
+        for k in data[name]:
+            ax.scatter([k]*len(data[name][k]), data[name][k])
+            samp = 'Samples at ' + str(name)
+            ax.set(xlabel= samp, ylabel='Gene Expression (TPM)')
+            plt.setp(ax.get_xticklabels(), rotation=45, ha='right', fontsize = 6)
+    plt.show()
+
 @Gooey(
     program_name='Plasmodium falciparum Genomic Analysis',
     menu=[{
@@ -214,10 +284,12 @@ def main():
     data_processing.add_argument("-file_chooser", nargs='*', help = 'Choose Files to include in scatterplot analysis.', widget='MultiFileChooser')
     #Second way to analyze the data: parental box subplots
     data_processing.add_argument('-box', help='Enable Box Plots for Parental Replicates', action='store_true', widget='BlockCheckbox')
+    #Third way to analyze data: progeny scatter plot of gene expression
+    data_processing.add_argument('-progeny', help='Enable Scatter Plots for Progeny Replicates', action='store_true', widget='BlockCheckbox')
     #Now we need a file chooser for the probe meta data
-    data_processing.add_argument("-probe_chooser", help = 'Choose Probe MetadataFile to include in boxplot analysis.', widget='FileChooser')
+    data_processing.add_argument("-probe_chooser", help = 'Choose Probe MetadataFile to include in progeny/parental analysis.', widget='FileChooser')
     #We also need a file chooser to pick out the raw count data
-    data_processing.add_argument("-count_data", help = 'Choose Raw Count Data to include in boxplot analysis.', widget='FileChooser')
+    data_processing.add_argument("-count_data", help = 'Choose Raw Count Data to include in progeny/parental analysis.', widget='FileChooser')
 
     #Now we parse all these arguments
     args = parser.parse_args()
@@ -229,6 +301,8 @@ def main():
     csvfiles= args.file_chooser
     #Save whether or not the user would like to produce a parental box plot
     boxer = args.box
+    #Save whether or not the user would like to produce a progeny scatter plot
+    prog = args.progeny
     #Save the probe MetadataFile
     probefile = args.probe_chooser
     #Save the raw count data
@@ -253,5 +327,14 @@ def main():
         normalized_fixed_names = fix_names(normalized_counts)
         #plot the box
         parentalboxes(gene, normalized_fixed_names)
+    if(prog):
+        #Quality control the reads
+        qc_counts_data= sample_and_geneqc(gctdata)
+        #Normalize the QC data
+        normalized_counts= tpm_norm(qc_counts_data, probefile, gctdata)
+        #Fix the naming conventions
+        normalized_fixed_names = fix_names(normalized_counts)
+        #plot the box
+        progenybar(gene, normalized_fixed_names)
 if __name__ == '__main__':
    main()

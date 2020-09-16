@@ -175,7 +175,10 @@ def parentalboxes(gene, df_correctnames):
     fig.subplots_adjust(wspace=0)
     for ax, name in zip(axes, ['4 hpi', '30 hpi', '44 hpi']):
         ax.boxplot([data[name][item] for item in ['NF54gfp', 'NHP4026']])
-        ax.set(xticklabels=['NF54gfp', 'NHP4026'], xlabel=name)
+        rep_count = {}
+        for i in ['NF54gfp', 'NHP4026']:
+            rep_count[i] = len(data[name][i])
+        ax.set(xticklabels=['%s\n$n$=%d'%(n,v) for n, v in rep_count.items()], xlabel=name)
         if name == '4 hpi':
             ax.set(ylabel='Gene Expression (TPM)')
         if name == '30 hpi':
